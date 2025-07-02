@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8" />
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+    <!-- Estas lineas son para que funcione en GitHub -->
+    <link rel="stylesheet" href="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.css" />
+    <script src="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.js"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 900px;
+        }
+
+         #map-title {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Asegúrate de que este background-color sea válido, rgba(r,g,b,a) */
+            background-color: rgba(255, 255, 255, 0.8); /* Ejemplo de blanco semitransparente */
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 25px;
+            z-index: 1000;
+        }
+
+        .leaflet-control-search {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+        
+#map-legend {
+        position: absolute;
+        bottom: 20px;
+        right: 1200px;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        line-height: 1.5em;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+     /* Estilo para las líneas en la leyenda, ahora son rectángulos para líneas */
+        .legend-line-swatch {
+            width: 30px; /* Ancho para representar una línea */
+            height: 4px; /* Grosor de la línea */
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+            border: 1px solid #333; /* Un pequeño borde para que se vea si el color es claro */
+        }
+    </style>
+</head>
+<body>
+    <div id="map-title"> Rutas Media milla (Foráneas)</div>
+    <div id="map"></div>
+    <div id="map-legend" class="legend">
+        <h4>Leyenda de Riesgo de Rutas</h4>
+        <div><span class="legend-line-swatch" style="background-color: #d8180c;"></span> Alto</div>
+        <div><span class="legend-line-swatch" style="background-color: #c8a207;"></span> Medio</div>
+        <div><span class="legend-line-swatch" style="background-color: #3fd80c;"></span> Bajo</div>
+        <br>
+        <h4>Leyenda de Nivel de riesgo por Entidad</h4>
+        <div><span style="background-color: #d8180c; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Nivel de riesgo de ruta (Alto)</div>
+        <div><span style="background-color: #c8a207; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Nivel de riesgo de ruta (Medio) </div>
+        <div><span style="background-color: #3fd80c; width: 20px; height: 20px; display: inline-block; border-radius: 50%;"></span> Nivel de riesgo de ruta (Bajo) </div>
+    </div>
+
+    <!-- Descomentar este bloque de código en el github -->
+    <script src="https://unpkg.com/leaflet@1.3.0/dist/leaflet.js"></script>
+    <script src="https://librekcesar.github.io/busca_zipcodes4/leaflet-search-master/leaflet-search-master/src/leaflet-search.js"></script>
+    <script src="paradas_foraneas_copia.js"></script> <!-- GeoJSON de la primera capa de puntos -->
+    <script src="estaciones_todas_copia.js"></script>
+    <script src="nombre_RUTA_GDL_CUL_SIN1_copia.js"></script> <!-- GeoJSON de la segunda capa de puntos -->
+    <script src="nombre_RUTA_GDL_TPQ_VLL_copia.js"></script> <!-- GeoJSON de la tercera capa de puntos -->
+    <script src="nombre_RUTA_MTY_CVM_TAM_copia.js"></script>
+    <script src="nombre_RUTA_MTY_REX_TAM_copia.js"></script>
+    <script src="nombre_RUTA_MTY1_XCOA1_XCOA2_copia.js"></script>
+    <script src="nombre_RUTA_MX0_AGU_GTO_copia.js"></script>
+    <script src="nombre_RUTA_MX0_CV1_CV2_copia.js"></script>
+    <script src="nombre_RUTA_MX0_GDL1_simpl_copia.js"></script>
+    <script src="nombre_RUTA_MX0_MCH1_copia.js"></script>
+    <script src="nombre_RUTA_MX0_MTY1_copia.js"></script>
+    <script src="nombre_RUTA_MX0_QER1_QER2_copia.js"></script>
+    <script src="nombre_RUTA_MX0_SLP1_copia.js"></script>
+    <script src="nombre_RUTA_MX0_SPGR2_copia.js"></script>
+    <script src="nombre_RUTA_MX0_SPMX11_TLC1_copia.js"></script>
+    <script src="nombre_RUTA_MX0_SPPCH3_copia.js"></script>
+    <script src="nombre_RUTA_MX0_VER1_VER4_VER2_copia.js"></script>
+    <script src="nombre_RUTA_MX0_VER3_copia.js"></script>
+    <script src="nombre_RUTA_MX0_VSA1_CAM1_copia.js"></script>
+    <script src="nombre_RUTA_MX0_VSA1_copia.js"></script>
+    <script src="nombre_RUTA_PB_OAX_copia.js"></script>
+    <script src="nombre_RUTA_SPYUC1_XCUN1_copia.js"></script>
+    <script src="nombre_RUTA_VER3_TGZ1_TGZ2_copia.js"></script>
+    <script src="entidades_mex_simpl_copia.js"></script>
+
+
+    <script>
+    // Suponiendo que 'centroidemx4.js' define una variable 'cenmx4' con el GeoJSON de la primera capa de puntos
+    var puntos1 = pemex_spgr2;
+    // Suponiendo que 'puntos_geojson_2.js' define una variable 'puntos2' con el GeoJSON de la segunda capa de puntos
+    var puntos2 = estaciones;
+    
+    // Suponiendo que 'lineas_geojson_1.js' define una variable 'lineas1' con el GeoJSON de la primera capa de líneas
+    var lineas1 = ruta_gdlcunsin;
+    // Suponiendo que 'lineas_geojson_2.js' define una variable 'lineas2' con el GeoJSON de la segunda capa de líneas
+    var lineas2 = ruta_gdltpqvll;
+    // Suponiendo que 'lineas_geojson_3.js' define una variable 'lineas3' con el GeoJSON de la tercera capa de líneas
+    var lineas3 = ruta_mtycvmmam;
+    var lineas4 = ruta_mty_rex_tam;
+    var lineas5 = ruta_mty_xcoas;
+    var lineas6 = ruta_mx0_agugto;
+    var lineas7 = ruta_mx0_cv12;
+    var lineas8 = ruta_mx0gdl;
+    var lineas9 = ruta_mx0mch;
+    var lineas10 = ruta_mx0mty;
+    var lineas11 = ruta_mx0_qer12;
+    var lineas12 = ruta_mx0_slp1;
+    var lineas13 = ruta_mx0spgr2;
+    var lineas14 = ruta_mx0spmx11tlc;
+    var lineas15 = ruta_mx0_sppch3;
+    var lineas16 = ruta_mx0_ver14;
+    var lineas17 = ruta_mx0ver3;
+    var lineas18 = ruta_mx0vsacam;
+    var lineas19 = ruta_mx0_vsa1;
+    var lineas20 = ruta_pb_oax;
+    var lineas21 = ruta_spyuc1_xcun;
+    var lineas22 = ruta_ver3_tgz;
+
+    var poligono1 = mex;
+   
+     //
+    
+    //
+        function getColor(riesgo) {
+            switch (riesgo) {
+                case 'Alto': return '#d8180c';
+                case 'Medio': return '#c8a207';
+                case 'Bajo': return '#3fd80c';
+                default: return '#a08c8a';
+            }
+        }
+
+        function style(feature) {
+            return {
+                fillColor: getColor(feature.properties.riesgo),
+                weight: 1,
+                opacity: 1,
+                color: 'black',
+                dashArray: '2',
+                fillOpacity: 0.5
+            };
+        }
+
+        function onEachFeature(feature, layer) {
+            if (feature.properties) {
+                layer.bindPopup('<p> Estado: ' + feature.properties.NOM_ENT + '</p><p>Otro: ' + feature.properties.NOMGEO + '</p><p>Nivel de riesgo: ' + feature.properties.riesgo  + '</p><p>Localidad: ' + feature.properties.locality + '</p>');
+            }
+        }
+
+        var layerGroup = L.geoJSON(mex, {
+            style: style,
+            onEachFeature: onEachFeature
+        });
+
+
+    //
+    
+
+    // Crear el mapa centrado en una ubicación específica
+    var map = new L.Map('map', {zoom: 9, center: new L.latLng([19.46695, -99.13366]) });
+
+    // Añadir capa de tiles al mapa
+    map.addLayer(new L.TileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'));
+
+    // Función para crear capas de puntos
+    function crearCapaPuntos(data, fillColor) {
+        return new L.GeoJSON(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 10,
+                    fillColor: fillColor,
+                    color: "#040305",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                });
+            },
+            onEachFeature: function (feature, layer) {
+                var popupContent = '<h4 style="color:' + feature.properties.color + '">' +
+                                   'Nombre: ' + feature.properties.Name + '</h4>' +
+                                   'Dirección: ' + feature.properties.description + '</h4>' + ' ' +
+                                   'Otros: ' + feature.properties.direccion;
+                layer.bindPopup(popupContent);
+            }
+        });
+    }
+
+    // Crear las capas de puntos
+    var capaPuntos1 = crearCapaPuntos(puntos1, "#1E75EC");
+
+
+    //Segunda capa de puntos
+ function crearCapaPuntos2(data, fillColor) {
+        return new L.GeoJSON(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 10,
+                    fillColor: fillColor,
+                    color: "#040305",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                });
+            },
+            onEachFeature: function (feature, layer) {
+                var popupContent = '<h4 style="color:' + feature.properties.color + '">' +
+                                   'Direccion: ' + feature.properties.Name + '</h4>' +
+                                   'Estación: ' + feature.properties.description + '</h4>' + ' ' +
+                                   'Otros: ' + feature.properties.direccion;
+                layer.bindPopup(popupContent);
+            }
+        });
+    }
+
+    // Crear las capas de puntos
+    var capaPuntos2 = crearCapaPuntos2(puntos2, "#3fd80c");
+
+
+    ////fin de segunda capa de puntos
+    
+    
+
+    // Función para crear capas de líneas
+    function crearCapaLineas(data, fillColor) {
+        return new L.GeoJSON(data, {
+            style: function (feature) {
+                return {
+                    color: fillColor,
+                    weight: 4,
+                    opacity: 1
+                };
+            },
+            onEachFeature: function (feature, layer) {
+                var popupContent = '<h4 style="color:' + feature.properties.color + '">' +
+                                   'Nombre: ' + feature.properties.nombre + '</h4>' +
+                                   'Tiempo de ruta: ' + feature.properties.t_ruta + '</h4>' +
+                                   'Nivel de riesgo: ' + feature.properties.t_riesgo;
+                layer.bindPopup(popupContent);
+            }
+        });
+    }
+
+    // Crear las capas de líneas
+    var capaLineas1 = crearCapaLineas(lineas1, "#d8180c");
+    var capaLineas2 = crearCapaLineas(lineas2, "#c8a207");
+    var capaLineas3 = crearCapaLineas(lineas3, "#d8180c");
+    var capaLineas4 = crearCapaLineas(lineas4, "#d8180c");
+    var capaLineas5 = crearCapaLineas(lineas5, "#d8180c");
+    var capaLineas6 = crearCapaLineas(lineas6, "#c8a207");
+    var capaLineas7 = crearCapaLineas(lineas7, "#d8180c");
+    var capaLineas8 = crearCapaLineas(lineas8, "#c8a207");
+    var capaLineas9 = crearCapaLineas(lineas9, "#d8180c");
+    var capaLineas10 = crearCapaLineas(lineas10, "#d8180c");
+    var capaLineas11 = crearCapaLineas(lineas11, "#c8a207");
+    var capaLineas12 = crearCapaLineas(lineas12, "#c8a207");
+    var capaLineas13 = crearCapaLineas(lineas13, "#c8a207");
+    var capaLineas14 = crearCapaLineas(lineas14, "#3fd80c");
+    var capaLineas15 = crearCapaLineas(lineas15, "#c8a207");
+    var capaLineas16 = crearCapaLineas(lineas16, "#d8180c");
+    var capaLineas17 = crearCapaLineas(lineas17, "#d8180c");
+    var capaLineas18 = crearCapaLineas(lineas18, "#c8a207");
+    var capaLineas19 = crearCapaLineas(lineas19, "#d8180c");
+    var capaLineas20 = crearCapaLineas(lineas20, "#d8180c");
+    var capaLineas21 = crearCapaLineas(lineas21, "#3fd80c");
+    var capaLineas22 = crearCapaLineas(lineas22, "#3fd80c");
+   
+    
+
+    //////
+
+
+    ////
+   
+
+    // Añadir las capas al mapa
+    map.addLayer(capaPuntos1);
+    map.addLayer(capaPuntos2);
+   
+    map.addLayer(capaLineas1);
+    map.addLayer(capaLineas2);
+    map.addLayer(capaLineas3);
+    map.addLayer(capaLineas4);
+    map.addLayer(capaLineas5);
+    map.addLayer(capaLineas6);
+    map.addLayer(capaLineas7);
+    map.addLayer(capaLineas8);
+    map.addLayer(capaLineas9);
+    map.addLayer(capaLineas10);
+    map.addLayer(capaLineas11);
+    map.addLayer(capaLineas12);
+    map.addLayer(capaLineas13);
+    map.addLayer(capaLineas14);
+    map.addLayer(capaLineas15);
+    map.addLayer(capaLineas16);
+    map.addLayer(capaLineas17);
+    map.addLayer(capaLineas18);
+    map.addLayer(capaLineas19);
+    map.addLayer(capaLineas20);
+    map.addLayer(capaLineas21);
+    map.addLayer(capaLineas22);
+    
+
+    // Añadir control de capas
+    var overlays = {
+        "Paradas seguras": capaPuntos1,
+        "Ubicación de Estaciones": capaPuntos2,
+        "Ruta GDL-CUL1-SIN1": capaLineas1,
+        "Ruta GDL-XTPQ1-VLL": capaLineas2,
+        "Ruta MTY1-XCVM1-XTAM": capaLineas3,
+        "Ruta MTY1-XREX1-MAM1": capaLineas4,
+        "Ruta MTY1-XCOA1-XCOA2": capaLineas5,
+        "Ruta MX0-AGU1-GTO": capaLineas6,
+        "Ruta MX0-CV1-CV2": capaLineas7,
+        "Ruta MX0-GDL1": capaLineas8, 
+        "Ruta MX0-MCH1": capaLineas9,
+        "Ruta MX0-MTY1": capaLineas10,
+        "Ruta MX0-QER1-QER2": capaLineas11,
+        "Ruta MX0-SLP1": capaLineas12, 
+        "Ruta MX0-SPGR2": capaLineas13, 
+        "Ruta MX0-SPMX11-TLC1": capaLineas14, 
+        "Ruta MX0-SPPCH3": capaLineas15, 
+        "Ruta MX0-VER1-VER2-VER4": capaLineas16, 
+        "Ruta MX0-VER3": capaLineas17, 
+        "Ruta VSA1-SPCAM1-SPYUC1": capaLineas18, 
+        "Ruta MX0-VSA1": capaLineas19, 
+        "Ruta PB1-OAX1": capaLineas20, 
+        "Ruta SPYUC1-XCUN1": capaLineas21, 
+        "Ruta VER3-TGZ1-TGZ2": capaLineas22,
+        "Nivel de riesgo por municipio": layerGroup
+        
+       
+    };
+
+    L.control.layers(null, overlays, {collapsed: false}).addTo(map);
+    </script>
+</body>
+</html>
